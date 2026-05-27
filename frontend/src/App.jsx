@@ -86,7 +86,7 @@ export default function App() {
     <>
       <GlobalStyle />
       <div style={{ maxWidth: 600, margin: '0 auto', padding: '40px 20px', display: 'flex', flexDirection: 'column', height: '100vh' }}>
-        
+
         {/* Top Header */}
         <div style={{ marginBottom: 20 }}>
           <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em' }}>🌐 BabelChat AI</h1>
@@ -109,6 +109,11 @@ export default function App() {
               <option value="ja">Japanese (日本語)</option>
               <option value="it">Italian (Italiano)</option>
               <option value="zh-cn">Chinese (Simplified)</option>
+              <option value="ar">Arabic (العربية)</option>
+              <option value="ko">Korean (한국어)</option>
+              <option value="ru">Russian (Русский)</option>
+              <option value="gu">Gujarati (ગુજરાતી)</option>
+              <option value="pt">Portuguese (Português)</option>
             </select>
           </div>
         </div>
@@ -149,11 +154,11 @@ export default function App() {
 
         {/* Bottom Text Input Sender Row */}
         <form onSubmit={handleSend} style={{ display: 'flex', gap: 10 }}>
-          <input 
-            type="text" 
-            value={text} 
-            onChange={e => setText(e.target.value)} 
-            placeholder="Type your native text here..." 
+          <input
+            type="text"
+            value={text}
+            onChange={e => setText(e.target.value)}
+            placeholder="Type your native text here..."
             autoComplete="off"
           />
           <button type="submit" disabled={loading} style={{ background: '#e2e4ea', color: '#111318', border: 'none', borderRadius: '8px', padding: '0 24px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
