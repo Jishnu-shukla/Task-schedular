@@ -38,7 +38,7 @@ const GlobalStyle = () => (
 );
  
 const FieldLabel = ({ children }) => (
-  <p style={{ fontSize: 10, color: '#2e3040', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 6 }}>
+  <p style={{ fontSize: 10, color: '#6b7080', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 6 }}>
     {children}
   </p>
 );
@@ -127,13 +127,13 @@ export default function App() {
               <h1 style={{ fontSize: 20, fontWeight: 600, color: '#e8eaf2', letterSpacing: '-0.02em' }}>
                 BabelChat
               </h1>
-              <p style={{ fontSize: 12, color: '#2e3040', marginTop: 4 }}>
+              <p style={{ fontSize: 12, color: '#6b7080', marginTop: 4 }}>
                 Real-time translation across rooms
               </p>
             </div>
  
             {/* Divider */}
-            <div style={{ height: '0.5px', background: 'rgba(255,255,255,0.05)', marginBottom: 24 }} />
+            <div style={{ height: '0.5px', background: 'rgba(255,255,255,0.1)', marginBottom: 24 }} />
  
             {/* Username */}
             <FieldLabel>DISPLAY NAME</FieldLabel>
@@ -160,9 +160,9 @@ export default function App() {
  
             {/* OR */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-              <div style={{ flex: 1, height: '0.5px', background: 'rgba(255,255,255,0.05)' }} />
-              <span style={{ fontSize: 10, color: '#222530', fontWeight: 600 }}>OR</span>
-              <div style={{ flex: 1, height: '0.5px', background: 'rgba(255,255,255,0.05)' }} />
+              <div style={{ flex: 1, height: '0.5px', background: 'rgba(255,255,255,0.1)' }} />
+              <span style={{ fontSize: 10, color: '#5a6070', fontWeight: 600 }}>OR</span>
+              <div style={{ flex: 1, height: '0.5px', background: 'rgba(255,255,255,0.1)' }} />
             </div>
  
             {/* Join */}
@@ -270,8 +270,8 @@ export default function App() {
         }}>
           {messages.length === 0 ? (
             <div style={{ margin: 'auto', textAlign: 'center' }}>
-              <p style={{ fontSize: 13, color: '#1e2230' }}>Room is empty</p>
-              <p style={{ fontSize: 11, color: '#181c28', marginTop: 4 }}>
+              <p style={{ fontSize: 13, color: '#4a5060' }}>Room is empty</p>
+              <p style={{ fontSize: 11, color: '#3a4050', marginTop: 4 }}>
                 Share the room ID <span style={{ color: '#38bdf8' }}>{room}</span> to invite others
               </p>
             </div>
