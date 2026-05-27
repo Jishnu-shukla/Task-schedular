@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const BACKEND_URL = 'http://localhost:5000/api/messages'; // Changed to our message route
+const BACKEND_URL = 'https://task-schedular-qnt6.onrender.com'; // Changed to our message route
 
 const GlobalStyle = () => (
   <style>{`
