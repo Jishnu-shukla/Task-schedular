@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const schedule = require('node-schedule');
+const { translate } = require('@vitalets/google-translate-api'); // <-- Import the translator
 
 const app = express();
 const PORT = 5000;
@@ -8,74 +8,53 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
-let tasks = [];
+// Our old "tasks" array is now our live global chat database!
+let messages = [];
 
-// A hidden dictionary to store running node-schedule jobs
-// This lets us find a specific timer by its ID and kill it!
-let activeJobs = {};
-
-app.get('/api/tasks', (req, res) => {  
-    res.status(200).json(tasks);
+// Endpoint 1: Fetch all past translated messages
+app.get('/api/messages', (req, res) => {
+    res.status(200).json(messages);
 });
 
-app.post('/api/tasks', (req, res) => { 
-    const { taskName, executionTime } = req.body;
+// Endpoint 2: Intercept a message, translate it, and save it
+app.post('/api/messages', async (req, res) => {
+    const { username, originalText, targetLanguage } = req.body;
 
-    if(!taskName || !executionTime ) {
-        return res.status(400).json({ error: "Missing taskName or executionTime!" });
+    // Simple validation
+    if (!username || !originalText || !targetLanguage) {
+        return res.status(400).json({ error: "Missing username, text, or target language!" });
     }
 
-    const targetDate = new Date(executionTime);
-    const now = new Date();
+    try {
+        console.log(`[TRANSLATOR] Translating "${originalText}" to code: [${targetLanguage}]`);
 
-    if (targetDate <= now) {
-        return res.status(400).json({ error: "Cannot schedule tasks in the past or current minute! Please pick a future time." });
+        // Force translate the incoming message before it hits our database array
+        const translation = await translate(originalText, { to: targetLanguage });
+
+        const newMessage = {
+            id: Date.now().toString(),
+            username: username,
+            originalText: originalText,
+            translatedText: translation.text, // The new converted string!
+            targetLanguage: targetLanguage,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        messages.push(newMessage);
+
+        res.status(201).json(newMessage);
+    } catch (error) {
+        console.error("Translation error:", error);
+        res.status(500).json({ error: "The translation engine hit a snag." });
     }
-
-    const taskId = Date.now().toString();
-
-    const newTask = {
-        id: taskId,
-        taskName: taskName,
-        executionTime: executionTime,
-        status: "Pending"
-    }
-
-    tasks.push(newTask);
-
-    console.log(`[SCHEDULER] Setting alarm for "${taskName}" at ${targetDate.toLocaleString()}`);
-
-    const job = schedule.scheduleJob(targetDate, function() {
-        console.log(`\n⏰ [ALARM TRIGGERED]: "${taskName}"`);
-        newTask.status = "Executed";
-        
-        delete activeJobs[taskId];
-    });
-
-    activeJobs[taskId] = job;
-
-    res.status(201).json({ message: "Task added successfully!", task: newTask });
 });
 
-app.delete('/api/tasks/:id', (req, res) => {
-    const { id } = req.params;
-
-    if (activeJobs[id]) {
-        activeJobs[id].cancel(); // Tells node-schedule to stop counting down
-        delete activeJobs[id];   // Remove from memory dictionary
-        console.log(`[SCHEDULER] Cancelled background timer for task ID: ${id}`);
-    }
-
-    const originalLength = tasks.length;
-    tasks = tasks.filter(task => task.id !== id);
-
-    if (tasks.length === originalLength) {
-        return res.status(404).json({ error: "Task not found!" });
-    }
-
-    res.status(200).json({ message: "Task successfully deleted and cancelled!" });
+// Endpoint 3: Clear Chat (Optional utility button)
+app.delete('/api/messages', (req, res) => {
+    messages = [];
+    res.status(200).json({ message: "Chat history cleared!" });
 });
 
 app.listen(PORT, () => {
-    console.log("Task scheduler Server is running on port 5000");
+    console.log("🌍 Global Translation Chat Server running on port 5000");
 });
