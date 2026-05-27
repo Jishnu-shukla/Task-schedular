@@ -1,49 +1,58 @@
 import React, { useState, useEffect, useRef } from 'react';
-
-// Make sure this points to your live Render backend URL!
+ 
 const BACKEND_URL = 'https://task-schedular-qnt6.onrender.com/api/messages';
-
+ 
 const GlobalStyle = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body, #root {
       min-height: 100vh;
-      background: #111318;
-      color: #e2e4ea;
+      background: #0a0b0f;
+      color: #c8cad4;
       font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
     input[type="text"], select {
-      background: #1a1d25;
-      border: 1px solid #2a2e3a;
-      color: #e2e4ea;
+      background: #111318;
+      border: 0.5px solid rgba(255,255,255,0.08);
+      color: #c8cad4;
       font-family: 'Inter', sans-serif;
       font-size: 13px;
-      padding: 11px 14px;
+      padding: 10px 14px;
       border-radius: 8px;
       width: 100%;
       outline: none;
+      transition: border-color 0.15s;
     }
+    input[type="text"]:focus, select:focus {
+      border-color: rgba(255,255,255,0.18);
+    }
+    input[type="text"]::placeholder { color: #2e3040; }
     select { cursor: pointer; }
-    @keyframes chatSlide {
-      from { opacity: 0; transform: translateY(10px); }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0); }
     }
   `}</style>
 );
-
+ 
+const FieldLabel = ({ children }) => (
+  <p style={{ fontSize: 10, color: '#2e3040', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 6 }}>
+    {children}
+  </p>
+);
+ 
 export default function App() {
   const [messages, setMessages] = useState([]);
   const [username, setUsername] = useState('WebUser_' + Math.floor(Math.random() * 100));
-  const [room, setRoom] = useState(''); // Empty initially to show portal view
-  const [inputRoomId, setInputRoomId] = useState(''); // Tracks user typing a room code
+  const [room, setRoom] = useState('');
+  const [inputRoomId, setInputRoomId] = useState('');
   const [text, setText] = useState('');
-  const [targetLanguage, setTargetLanguage] = useState('es'); 
+  const [targetLanguage, setTargetLanguage] = useState('es');
   const [loading, setLoading] = useState(false);
-
   const chatEndRef = useRef(null);
-
-  // Updated to pass the current active room down to the backend query parameter strings
+ 
   const fetchMessages = async () => {
     if (!room) return;
     try {
@@ -52,139 +61,219 @@ export default function App() {
       setMessages(data);
     } catch { /* silent */ }
   };
-
+ 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  // Sync loop triggers automatically whenever the active room selection updates
+ 
   useEffect(() => {
     fetchMessages();
     const id = setInterval(fetchMessages, 2000);
     return () => clearInterval(id);
   }, [room]);
-
+ 
   const handleSend = async (e) => {
     e.preventDefault();
     if (!text.trim()) return;
-
     setLoading(true);
     try {
       const res = await fetch(BACKEND_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          username, 
-          originalText: text, 
+        body: JSON.stringify({
+          username,
+          originalText: text,
           targetLanguage,
-          room: room.trim().toLowerCase() // Attaches room parameter strings
+          room: room.trim().toLowerCase(),
         }),
       });
-      if (res.ok) {
-        setText('');
-        fetchMessages();
-      }
+      if (res.ok) { setText(''); fetchMessages(); }
     } catch {
-      alert("Could not reach chat server.");
+      alert('Could not reach chat server.');
     } finally {
       setLoading(false);
     }
   };
-
-  // Generates a dynamic random room hash identifier key string
+ 
   const handleCreateRoom = () => {
     const uniqueId = 'room-' + Math.random().toString(16).substring(2, 6);
     setRoom(uniqueId);
   };
-
-  // Drops player into input field parameter targets
+ 
   const handleJoinRoom = (e) => {
     e.preventDefault();
-    if (!inputRoomId.trim()) return alert("Please enter a Room ID!");
+    if (!inputRoomId.trim()) return alert('Please enter a Room ID.');
     setRoom(inputRoomId.trim().toLowerCase());
   };
-
-  // --- RENDERING BLOCK 1: GATEKEEPER ROOM LOBBY PORTAL CARD ---
+ 
+  /* ── PORTAL ─────────────────────────────────────────────── */
   if (!room) {
     return (
       <>
         <GlobalStyle />
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '20px' }}>
-          <div style={{ background: '#15181f', border: '1px solid #22262f', padding: '30px', borderRadius: '16px', width: '100%', maxWidth: '400px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-            <h1 style={{ fontSize: '24px', fontWeight: 600, textAlign: 'center', marginBottom: '6px' }}>🌐 BabelChat Web</h1>
-            <p style={{ fontSize: '13px', color: '#4a5060', textAlign: 'center', marginBottom: '24px' }}>Secure Room Synchronization Gateway</p>
-            
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ fontSize: '10px', color: '#5a6070', display: 'block', marginBottom: '6px', fontWeight: 600, letterSpacing: '0.05em' }}>YOUR CHAT PROFILE NAME</label>
-              <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="Username" />
+        <div style={{
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          minHeight: '100vh', padding: 24,
+        }}>
+          <div style={{
+            background: '#0d0f14',
+            border: '0.5px solid rgba(255,255,255,0.07)',
+            borderRadius: 16,
+            padding: 32,
+            width: '100%', maxWidth: 380,
+          }}>
+            {/* Logo */}
+            <div style={{ textAlign: 'center', marginBottom: 28 }}>
+              <h1 style={{ fontSize: 20, fontWeight: 600, color: '#e8eaf2', letterSpacing: '-0.02em' }}>
+                BabelChat
+              </h1>
+              <p style={{ fontSize: 12, color: '#2e3040', marginTop: 4 }}>
+                Real-time translation across rooms
+              </p>
             </div>
-
-            <button onClick={handleCreateRoom} style={{ background: '#ffffff', color: '#111318', border: 'none', padding: '12px', borderRadius: '8px', width: '100%', fontWeight: 600, fontSize: '14px', cursor: 'pointer', marginBottom: '20px' }}>
-              ✨ Create Unique Room ID
+ 
+            {/* Divider */}
+            <div style={{ height: '0.5px', background: 'rgba(255,255,255,0.05)', marginBottom: 24 }} />
+ 
+            {/* Username */}
+            <FieldLabel>DISPLAY NAME</FieldLabel>
+            <input
+              type="text"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              placeholder="Your name"
+              style={{ marginBottom: 20 }}
+            />
+ 
+            {/* Create */}
+            <button
+              onClick={handleCreateRoom}
+              style={{
+                background: '#e8eaf2', color: '#0a0b0f', border: 'none',
+                padding: '11px 0', borderRadius: 8, width: '100%',
+                fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                marginBottom: 20,
+              }}
+            >
+              Create new room
             </button>
-
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '10px' }}>
-              <div style={{ flex: 1, height: '1px', background: '#22262f' }} />
-              <span style={{ fontSize: '11px', color: '#3a3f50', fontWeight: 600 }}>OR</span>
-              <div style={{ flex: 1, height: '1px', background: '#22262f' }} />
+ 
+            {/* OR */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+              <div style={{ flex: 1, height: '0.5px', background: 'rgba(255,255,255,0.05)' }} />
+              <span style={{ fontSize: 10, color: '#222530', fontWeight: 600 }}>OR</span>
+              <div style={{ flex: 1, height: '0.5px', background: 'rgba(255,255,255,0.05)' }} />
             </div>
-
-            <form onSubmit={handleJoinRoom}>
-              <label style={{ fontSize: '10px', color: '#5a6070', display: 'block', marginBottom: '6px', fontWeight: 600, letterSpacing: '0.05em' }}>ENTER LIVE ROOM KEY</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input type="text" placeholder="e.g., room-5834" value={inputRoomId} onChange={e => setInputRoomId(e.target.value)} />
-                <button type="submit" style={{ background: '#2e3240', border: '1px solid #3a3f50', color: '#38bdf8', borderRadius: '8px', padding: '0 16px', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}>
-                  Join
-                </button>
-              </div>
+ 
+            {/* Join */}
+            <FieldLabel>JOIN EXISTING ROOM</FieldLabel>
+            <form onSubmit={handleJoinRoom} style={{ display: 'flex', gap: 8 }}>
+              <input
+                type="text"
+                placeholder="e.g. room-4a8f"
+                value={inputRoomId}
+                onChange={e => setInputRoomId(e.target.value)}
+                style={{ flex: 1 }}
+              />
+              <button
+                type="submit"
+                style={{
+                  background: '#131927',
+                  border: '0.5px solid rgba(56,189,248,0.18)',
+                  color: '#38bdf8', borderRadius: 8,
+                  padding: '0 16px', fontWeight: 600,
+                  fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap',
+                }}
+              >
+                Join
+              </button>
             </form>
           </div>
         </div>
       </>
     );
   }
-
-  // --- RENDERING BLOCK 2: SECURED CHAT INTERFACE HUB WINDOW ---
+ 
+  /* ── CHAT ────────────────────────────────────────────────── */
   return (
     <>
       <GlobalStyle />
-      <div style={{ maxWidth: 600, margin: '0 auto', padding: '30px 20px', display: 'flex', flexDirection: 'column', height: '100vh' }}>
-
-        {/* Dynamic Header Room Indicators */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, background: '#111318' }}>
+      <div style={{
+        maxWidth: 600, margin: '0 auto', padding: '24px 20px',
+        display: 'flex', flexDirection: 'column', height: '100vh',
+      }}>
+ 
+        {/* Header */}
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          marginBottom: 16,
+          background: '#0d0f14',
+          border: '0.5px solid rgba(255,255,255,0.06)',
+          borderRadius: 12, padding: '12px 16px',
+        }}>
           <div>
-            <h1 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', color: '#38bdf8' }}>🔑 Active Room: {room}</h1>
-            <p style={{ fontSize: 12, color: '#4a5060', marginTop: 2 }}>Connected Identity: <strong>{username}</strong></p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e' }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#38bdf8', letterSpacing: '-0.01em' }}>
+                {room}
+              </span>
+            </div>
+            <p style={{ fontSize: 11, color: '#2e3040', marginTop: 2 }}>{username}</p>
           </div>
-          <button onClick={() => { setRoom(''); setMessages([]); setInputRoomId(''); }} style={{ background: '#22161a', color: '#ef4444', border: '1px solid #3d1d24', borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
-            Exit Room
+          <button
+            onClick={() => { setRoom(''); setMessages([]); setInputRoomId(''); }}
+            style={{
+              background: 'rgba(239,68,68,0.08)',
+              color: '#ef4444',
+              border: '0.5px solid rgba(239,68,68,0.15)',
+              borderRadius: 7, padding: '6px 12px',
+              fontSize: 11, fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            Exit room
           </button>
         </div>
-
-        {/* Config Engine Selectors Row */}
-        <div style={{ background: '#15181f', border: '1px solid #22262f', padding: '12px', borderRadius: 10, marginBottom: 20 }}>
-          <label style={{ fontSize: 10, color: '#5a6070', display: 'block', marginBottom: 5, fontWeight: 600 }}>TRANSLATE MY OUTGOING TEXT INTO</label>
+ 
+        {/* Language selector */}
+        <div style={{
+          background: '#0d0f14',
+          border: '0.5px solid rgba(255,255,255,0.06)',
+          borderRadius: 10, padding: '10px 12px',
+          marginBottom: 14,
+        }}>
+          <FieldLabel>TRANSLATE MY MESSAGES INTO</FieldLabel>
           <select value={targetLanguage} onChange={e => setTargetLanguage(e.target.value)}>
-            <option value="es">Spanish (Español)</option>
-            <option value="gu">Gujarati (ગુજરાતી)</option>
-            <option value="hi">Hindi (हिंदी)</option>
-            <option value="fr">French (Français)</option>
-            <option value="de">German (Deutsch)</option>
-            <option value="ja">Japanese (日本語)</option>
-            <option value="it">Italian (Italiano)</option>
+            <option value="es">Spanish</option>
+            <option value="gu">Gujarati</option>
+            <option value="hi">Hindi</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="ja">Japanese</option>
+            <option value="it">Italian</option>
             <option value="zh-cn">Chinese (Simplified)</option>
-            <option value="ar">Arabic (العربية)</option>
-            <option value="ko">Korean (한국어)</option>
-            <option value="ru">Russian (Русский)</option>
-            <option value="pt">Portuguese (Português)</option>
+            <option value="ar">Arabic</option>
+            <option value="ko">Korean</option>
+            <option value="ru">Russian</option>
+            <option value="pt">Portuguese</option>
           </select>
         </div>
-
-        {/* Dynamic Chat Message Logs Stream */}
-        <div style={{ flex: 1, background: '#15181f', border: '1px solid #22262f', borderRadius: 14, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+ 
+        {/* Messages */}
+        <div style={{
+          flex: 1,
+          background: '#0d0f14',
+          border: '0.5px solid rgba(255,255,255,0.06)',
+          borderRadius: 12, padding: '16px',
+          overflowY: 'auto',
+          display: 'flex', flexDirection: 'column', gap: 10,
+          marginBottom: 14,
+        }}>
           {messages.length === 0 ? (
-            <div style={{ margin: 'auto', color: '#3a3f50', fontSize: 13, textAlign: 'center' }}>
-              Room "{room}" is empty.<br />Enter this exact key in your phone to synchronize.
+            <div style={{ margin: 'auto', textAlign: 'center' }}>
+              <p style={{ fontSize: 13, color: '#1e2230' }}>Room is empty</p>
+              <p style={{ fontSize: 11, color: '#181c28', marginTop: 4 }}>
+                Share the room ID <span style={{ color: '#38bdf8' }}>{room}</span> to invite others
+              </p>
             </div>
           ) : (
             messages.map((msg) => {
@@ -192,38 +281,63 @@ export default function App() {
               return (
                 <div key={msg.id} style={{
                   alignSelf: isMe ? 'flex-end' : 'flex-start',
-                  maxWidth: '80%',
-                  background: isMe ? '#1e2433' : '#161920', // Matched mobile color bubbles
-                  border: `1px solid ${isMe ? '#2a3247' : '#22262f'}`,
-                  borderRadius: 12,
-                  padding: '12px 16px',
-                  animation: 'chatSlide 0.2s ease both'
+                  maxWidth: '78%',
+                  animation: 'slideUp 0.18s ease both',
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 20, marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: isMe ? '#8a909f' : '#5a6070' }}>{isMe ? 'You' : msg.username}</span>
+                  <p style={{
+                    fontSize: 10, fontWeight: 600, letterSpacing: '0.05em',
+                    color: isMe ? '#2a3040' : '#1e2530',
+                    marginBottom: 4,
+                    textAlign: isMe ? 'right' : 'left',
+                  }}>
+                    {isMe ? 'YOU' : msg.username}
+                  </p>
+                  <div style={{
+                    background: isMe ? '#131927' : '#111318',
+                    border: `0.5px solid ${isMe ? 'rgba(56,189,248,0.12)' : 'rgba(255,255,255,0.05)'}`,
+                    borderRadius: 12,
+                    borderTopRightRadius: isMe ? 3 : 12,
+                    borderTopLeftRadius: isMe ? 12 : 3,
+                    padding: '10px 14px',
+                  }}>
+                    <p style={{ fontSize: 15, color: '#e0e2ec', lineHeight: 1.5 }}>
+                      {msg.translatedText}
+                    </p>
                   </div>
-                  <p style={{ fontSize: 16, fontWeight: 500, color: '#ffffff', lineHeight: '1.4' }}>{msg.translatedText}</p>
                 </div>
               );
             })
           )}
           <div ref={chatEndRef} />
         </div>
-
-        {/* Input Sender Core Form Bar */}
+ 
+        {/* Input */}
         <form onSubmit={handleSend} style={{ display: 'flex', gap: 10 }}>
           <input
             type="text"
             value={text}
             onChange={e => setText(e.target.value)}
-            placeholder={`Message #${room}...`}
+            placeholder={`Message ${room}...`}
             autoComplete="off"
+            style={{ flex: 1 }}
           />
-          <button type="submit" disabled={loading} style={{ background: '#e2e4ea', color: '#111318', border: 'none', borderRadius: '8px', padding: '0 24px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-            {loading ? '...' : 'Send'}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              background: loading ? '#1a1d24' : '#e8eaf2',
+              color: loading ? '#2e3040' : '#0a0b0f',
+              border: 'none', borderRadius: 8,
+              padding: '0 20px', fontSize: 13,
+              fontWeight: 600, cursor: loading ? 'default' : 'pointer',
+              transition: 'background 0.15s',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {loading ? '···' : 'Send'}
           </button>
         </form>
-
+ 
       </div>
     </>
   );
