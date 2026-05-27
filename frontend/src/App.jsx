@@ -28,7 +28,7 @@ const GlobalStyle = () => (
     input[type="text"]:focus, select:focus {
       border-color: rgba(255,255,255,0.18);
     }
-    input[type="text"]::placeholder { color: #2e3040; }
+    input[type="text"]::placeholder { color: #565d70; }
     select { cursor: pointer; }
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(6px); }
@@ -38,7 +38,7 @@ const GlobalStyle = () => (
 );
  
 const FieldLabel = ({ children }) => (
-  <p style={{ fontSize: 10, color: '#6b7080', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 6 }}>
+  <p style={{ fontSize: 10, color: '#9ba3b8', letterSpacing: '0.08em', fontWeight: 600, marginBottom: 6 }}>
     {children}
   </p>
 );
@@ -218,7 +218,7 @@ export default function App() {
                 {room}
               </span>
             </div>
-            <p style={{ fontSize: 11, color: '#2e3040', marginTop: 2 }}>{username}</p>
+            <p style={{ fontSize: 11, color: '#565d70', marginTop: 2 }}>{username}</p>
           </div>
           <button
             onClick={() => { setRoom(''); setMessages([]); setInputRoomId(''); }}
@@ -270,7 +270,7 @@ export default function App() {
         }}>
           {messages.length === 0 ? (
             <div style={{ margin: 'auto', textAlign: 'center' }}>
-              <p style={{ fontSize: 13, color: '#4a5060' }}>Room is empty</p>
+              <p style={{ fontSize: 13, color: '#7a8494' }}>Room is empty</p>
               <p style={{ fontSize: 11, color: '#3a4050', marginTop: 4 }}>
                 Share the room ID <span style={{ color: '#38bdf8' }}>{room}</span> to invite others
               </p>
