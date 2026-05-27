@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const BACKEND_URL = 'http://localhost:5000/api/tasks';
+const BACKEND_URL = 'https://task-schedular-qnt6.onrender.com';
 
 const GlobalStyle = () => (
   <style>{`
